@@ -95,7 +95,8 @@ class TMOD:
             self.vertexOffset = vertexOffset
             self.faceOffset = faceOffset
 class Terrain:
-    def __init__(self, unknown, unknown1, unknownInfoOffset, countOfUnknownInfo, cellInfoOffset, unknownOffsetToList, cellInfoCount, unknownOffset3):
+    def __init__(self, unknown, unknown1, unknownInfoOffset, countOfUnknownInfo, cellInfoOffset, unknownOffsetToList, 
+    cellInfoCount, unknownOffset3, zero, unknown3, unknownInfo2Offset, unknownInfo2Count, unknown4):
         self.unknown = unknown
         self.unknown1 = unknown1
         self.unknownInfoOffset = unknownInfoOffset
@@ -104,6 +105,11 @@ class Terrain:
         self.unknownOffsetToList = unknownOffsetToList
         self.cellInfoCount = cellInfoCount
         self.unknownOffset3 = unknownOffset3
+        self.zero = zero
+        self.unknown3 = unknown3
+        self.unknownInfo2Offset = unknownInfo2Offset
+        self.unknownInfo2Count = unknownInfo2Count
+        self.unknown4 = unknown4
     # 64 bytes
     class UnknownInfo:
         def __init__(self, matrixOffset, unknownOffset2, typeNameOffset, modelNameOffset, coordsInfoOffset, padding, uvNameOffset, padding2, textureNamesOffsetOffset, padding3):
@@ -121,6 +127,10 @@ class Terrain:
             def __init__(self, coordsOffset, coordsOffset2):
                 self.coordsOffset = coordsOffset
                 self.coordsOffset2 = coordsOffset2
+    class UnknownInfo2:
+        def __init__(self, unknown1, unknown2):
+            self.unknown1 = unknown1
+            self.unknown2 = unknown2
     # 60 bytes
     class CellInfo:
         def __init__(self, cellNameOffset, floatsOffset, floatsOffset2, floatsOffset3, cellPathOffsetOffset, zero, zero1, matrixOffset, 
