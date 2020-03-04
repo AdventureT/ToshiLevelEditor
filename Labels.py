@@ -106,17 +106,21 @@ class Terrain:
         self.unknownOffset3 = unknownOffset3
     # 64 bytes
     class UnknownInfo:
-        def __init__(self, matrixOffset, unknownOffset2, typeNameOffset, modelNameOffset, matrixOffset2, padding, uvNameOffset, padding2, textureNamesOffsetOffset, padding3):
+        def __init__(self, matrixOffset, unknownOffset2, typeNameOffset, modelNameOffset, coordsInfoOffset, padding, uvNameOffset, padding2, textureNamesOffsetOffset, padding3):
             self.matrixOffset = matrixOffset
             self.unknownOffset2 = unknownOffset2
             self.typeNameOffset = typeNameOffset
             self.modelNameOffset = modelNameOffset
-            self.matrixOffset2 = matrixOffset2
+            self.coordsInfoOffset = coordsInfoOffset
             self.padding = padding # 12 bytes
             self.uvNameOffset = uvNameOffset
             self.padding2 = padding2 # 12 bytes
             self.textureNamesOffsetOffset = textureNamesOffsetOffset
             self.padding3 = padding3 # 12 bytes
+        class CoordsInfo:
+            def __init__(self, coordsOffset, coordsOffset2):
+                self.coordsOffset = coordsOffset
+                self.coordsOffset2 = coordsOffset2
     # 60 bytes
     class CellInfo:
         def __init__(self, cellNameOffset, floatsOffset, floatsOffset2, floatsOffset3, cellPathOffsetOffset, zero, zero1, matrixOffset, 
