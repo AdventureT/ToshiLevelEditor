@@ -17,5 +17,5 @@ class ChooseTrb(Operator, ImportHelper):
 
     def execute(self, context):
         print(self.filepath)
-        read(self.filepath)
+        read(self.filepath, 1)
         return {'FINISHED'}
