@@ -9,9 +9,9 @@ from bpy.types import Operator
 from bpy.props import StringProperty, BoolProperty
 
 class ChooseTrb(Operator, ImportHelper):
-    bl_idname = "test.open_filebrowser"
+    bl_idname = "choose.trb"
     bl_label = "Open"
-    bl_description = "Test"
+    bl_description = "Choose a terrain trb to import level data"
 
     filter_glob = StringProperty( default='*.trb', options={'HIDDEN'} )
 

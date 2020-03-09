@@ -94,13 +94,81 @@ class TMOD:
             self.offsetToAnotherOne = offsetToAnotherOne
             self.vertexOffset = vertexOffset
             self.faceOffset = faceOffset
+# Toshi without lod?
+# Way more complicated then tmdl tbh...
+class TWLD:
+    def __init__(self, header):
+        self.header = header
+        self.unknownInfos = []
+        self.unknownInfos2 = []
+        self.unknownInfos3 = []
+        self.meshesInfo = None
+        self.meshInfos = []
+        self.meshSubInfos = []
+    def __del__(self):
+        self.header = None
+        self.unknownInfos = []
+        self.unknownInfos2 = []
+        self.unknownInfos3 = []
+        self.meshesInfo = None
+        self.meshInfos = []
+        self.meshSubInfos = []
+    class Header:
+        def __init__(self, modelFileNameOffset, unknownInfoOffset, unknownOffset, unknown, unknown2, floats, meshInfoOffsetOffset, meshInfoOffset):
+            self.modelFileNameOffset = modelFileNameOffset
+            self.unknownInfoOffset = unknownInfoOffset
+            self.unknownOffset = unknownOffset
+            self.unknown = unknown
+            self.unknown2 = unknown2
+            self.floats = floats
+    class UnknownInfo:
+        def __init__(self, unknown, unknownInfo2OffsetOffset, unknownInfo2Offset):
+            self.unknown = unknown
+            self.unknownInfo2OffsetOffset = unknownInfo2OffsetOffset
+            self.unknownInfo2Offset = unknownInfo2Offset
+    class UnknownInfo2:
+        def __init__(self, count, unknownInfo3OffsetOffset, unknownInfo3Offset):
+            self.count = count
+            self.unknownInfo3OffsetOffset = unknownInfo3OffsetOffset
+            self.unknownInfo3Offset = unknownInfo3Offset
+    class UnknownInfo3:
+        def __init__(self, count, padding):
+            self.count = count
+            self.padding = padding
+    class MeshesInfo:
+        def __init__(self, meshInfoOffsetsCount, meshInfoOffsetsOffset, unknownDataOffset):
+            self.meshInfoOffsetsCount = meshInfoOffsetsCount
+            self.meshInfoOffsetsOffset = meshInfoOffsetsOffset
+            self.unknownDataOffset = unknownDataOffset
+            self.meshInfoOffsets = []
+    class UnknownData:
+        def __init__(self, floats, zero, count, zeros):
+            self.floats = floats
+            self.zero = zero
+            self.count = count
+            self.zeros = zeros
+    class MeshInfo:
+        def __init__(self, floats, meshSubInfoOffset):
+            self.floats = floats
+            self.meshSubInfoOffset = meshSubInfoOffset
+    class MeshSubInfo:
+        def __init__(self, zero, vertexCount, normalCount, faceCount, meshNameOffset, vertexOffset, faceOffset, count, unknown):
+            self.zero = zero
+            self.vertexCount = vertexCount
+            self.normalCount = normalCount
+            self.faceCount = faceCount
+            self.meshNameOffset = meshNameOffset
+            self.vertexOffset = vertexOffset
+            self.faceOffset = faceOffset
+            self.count = count
+            self.unknown = unknown
 class Terrain:
-    def __init__(self, unknown, unknown1, unknownInfoOffset, countOfUnknownInfo, cellInfoOffset, unknownOffsetToList, 
+    def __init__(self, unknown, unknown1, unknownInfoOffset, unknownInfoCount, cellInfoOffset, unknownOffsetToList, 
     cellInfoCount, unknownOffset3, zero, unknown3, unknownInfo2Offset, unknownInfo2Count, unknown4):
         self.unknown = unknown
         self.unknown1 = unknown1
         self.unknownInfoOffset = unknownInfoOffset
-        self.countOfUnknownInfo = countOfUnknownInfo
+        self.unknownInfoCount = unknownInfoCount
         self.cellInfoOffset = cellInfoOffset
         self.unknownOffsetToList = unknownOffsetToList
         self.cellInfoCount = cellInfoCount
