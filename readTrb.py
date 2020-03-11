@@ -158,6 +158,7 @@ def read(filepath, t):
                         f.seek(unknownInfo.typeNameOffset + chunk, 0)
                         td.append(TerrainData(readString(f), pos))
                     f.seek(re,0)
+                    print(td[k].modelName)
                 # Gets The directory
                 dire = os.path.dirname(filepath)
                 # Loading RegionAssets at the moment
@@ -176,8 +177,8 @@ def read(filepath, t):
 def exportData():
     for i in range(len(md)):
         tdpos = -1
+        mdlName = os.path.splitext(md[i].modelName)[0]
         for j in range(len(td)):
-            mdlName = os.path.splitext(md[i].modelName)[0]
             if (td[j].modelName == mdlName):
                 tdpos = j
                 break
@@ -196,6 +197,6 @@ def exportData():
                 obj.parent = parent_object
                 bpy.context.scene.collection.objects.link(obj)
         else:
-            print("Could not find a model called", md[i].modelName, "in RegionAssets.trb")
+            print("Could not find a model called", md[i].modelName, "in terrain.trb")
         
         
