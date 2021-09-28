@@ -1,5 +1,7 @@
 import struct
 
+
+
 # Trb FileSize
 class TSFL:
     def __init__(self, signature, size):
@@ -30,12 +32,12 @@ class SECT:
     def __init__(self, signature, size):
         self.signature = signature
         self.size = size
-# IDK
+# Relocation Data
 class RELC:
     def __init__(self, signature, size):
         self.signature = signature
         self.size = size
-# Relocation Table
+# Symbols
 class SYMB:
     class Symbol:
         def __init__(self, name, Id, nameOffset, nameId, dataOffset):
@@ -49,6 +51,19 @@ class SYMB:
         self.size = size
         self.symbolCount = symbolCount
         self.symbols = []
+
+class TRB:
+
+    chunk : int
+
+    def __init__(self, tsfl:TSFL, trbf:TRBF, hdrx:HDRX, sect:SECT, relc:RELC, symb:SYMB):
+        self.tsfl = tsfl
+        self.trbf = trbf
+        self.hdrx = hdrx
+        self.sect = sect
+        self.relc = relc
+        self.symb = symb
+
 # Toshi Model
 class TMOD:
     def __init__(self, header):
@@ -94,7 +109,7 @@ class TMOD:
             self.offsetToAnotherOne = offsetToAnotherOne
             self.vertexOffset = vertexOffset
             self.faceOffset = faceOffset
-# Toshi without lod?
+# Toshi World
 # Way more complicated then tmdl tbh...
 class TWLD:
     def __init__(self, header):

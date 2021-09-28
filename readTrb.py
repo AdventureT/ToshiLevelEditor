@@ -1,3 +1,4 @@
+from io import BufferedReader
 import struct
 import bpy
 from mathutils import Vector
@@ -8,9 +9,10 @@ import os
 
 md = []
 td = []
+trb = TRB
+f = BufferedReader
 
-def read(filepath, t):
-    f = open(filepath, "rb")
+def readTrbSections():
     tsfl = TSFL(readString(f,4), readUInt(f))
     trbf = TRBF(readString(f,4))
     hdrx = HDRX(readString(f,4), readUInt(f), readUShort(f), readUShort(f), readUInt(f))
@@ -34,16 +36,23 @@ def read(filepath, t):
         f.seek(cu,0)
         symb.symbols.append(c)
         print("SYMB ",x,": ", c.name)
-    f.seek(chunk,0)
-    baseChunk = chunk
+    trb = TRB(tsfl, trbf, hdrx, sect, relc, symb)
+    trb.chunk = chunk
+
+# Why recursion???
+def read(filepath, t):
+    f = open(filepath, "rb")
+    readTrbSections()
+    f.seek(trb.chunk,0)
+    baseChunk = trb.chunk
     mdIndex = 0
     x2 = 0
-    for x in range(len(symb.symbols)):
-        if symb.symbols[x].Id is not 0:
-            chunk = hdrx.files[symb.symbols[x].Id - 1].fileSize + baseChunk
-        f.seek(chunk + symb.symbols[x].dataOffset, 0)
+    for x in range(len(trb.symb.symbols)):
+        if trb.symb.symbols[x].Id is not 0:
+            chunk = trb.hdrx.files[trb.symb.symbols[x].Id - 1].fileSize + baseChunk
+        f.seek(chunk + trb.symb.symbols[x].dataOffset, 0)
         if t is 0:
-            if symb.symbols[x].name == "tmod":
+            if trb.symb.symbols[x].name == "tmod":
                 meshNames = []
                 tell = f.tell()
                 tmod = TMOD(TMOD.Header(readUInt(f), readUInt(f), readFloat(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
@@ -86,7 +95,7 @@ def read(filepath, t):
                 mdIndex += 1
                 x2 += 10
                 del tmod
-            if symb.symbols[x].name == "twld":
+            if trb.symb.symbols[x].name == "twld":
                 tell = f.tell()
                 meshNames = []
                 twld = TWLD(TWLD.Header(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
@@ -138,7 +147,7 @@ def read(filepath, t):
                 mdIndex += 1
                 del twld
         else:
-            if symb.symbols[x].name == "Terrain_Main":
+            if trb.symb.symbols[x].name == "Terrain_Main":
                 tell = f.tell()
                 terrain = Terrain(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
                 readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f))
@@ -165,10 +174,10 @@ def read(filepath, t):
                 dire += "\\RegionAssets.trb"
                 read(dire, 0)
     if t is 0:
-        print("TSFL: ", tsfl.signature, "Size: ", tsfl.size) 
-        print("TRBF: ", trbf.signature)
-        print("HDRX: ", hdrx.signature, "Size: ", hdrx.size, "Flag1: ", hdrx.flag1, "Flag2: ", hdrx.flag2, "Files: ", hdrx.fileCount)
-        print("SECT: ", sect.signature, "Size: ", sect.size)
+        print("TSFL: ", trb.tsfl.signature, "Size: ", trb.tsfl.size) 
+        print("TRBF: ", trb.trbf.signature)
+        print("HDRX: ", trb.hdrx.signature, "Size: ", trb.hdrx.size, "Flag1: ", trb.hdrx.flag1, "Flag2: ", trb.hdrx.flag2, "Files: ", trb.hdrx.fileCount)
+        print("SECT: ", trb.sect.signature, "Size: ", trb.sect.size)
         f.close()
         exportData()
         print("Finished")
