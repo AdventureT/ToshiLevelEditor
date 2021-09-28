@@ -39,6 +39,101 @@ def readTrbSections():
     trb = TRB(tsfl, trbf, hdrx, sect, relc, symb)
     trb.chunk = chunk
 
+def readModel(mdIndex : int, x2 : int):
+    meshNames = []
+    tmod = TMOD(TMOD.Header(readUInt(f), readUInt(f), readFloat(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
+    f.seek(tmod.header.modelFileNameOffset + trb.chunk, 0)
+    modelName = readString(f)
+    f.seek(tmod.header.meshInfoOffset + trb.chunk, 0)
+    tmod.meshesInfo = TMOD.MeshesInfo(readUInt(f), readUInt(f), readUInt(f))
+    for y in range(tmod.meshesInfo.meshCount):
+        tmod.meshesInfo.meshInfoOffsets.append(readUInt(f))
+    print("Mesh Count: ", tmod.meshesInfo.meshCount, "Model Name: ", modelName)
+    for z in range(tmod.meshesInfo.meshCount):
+        f.seek(tmod.meshesInfo.meshInfoOffsets[z] + trb.chunk, 0)
+        tmod.meshInfos.append(TMOD.MeshInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
+        f.seek(tmod.meshInfos[z].meshNameOffset + trb.chunk, 0)
+        meshName = readString(f)
+        meshNames.append(meshName)
+        print("\t Mesh Name: ", meshName)
+    for j in range(tmod.meshesInfo.meshCount):
+        f.seek(tmod.meshInfos[j].meshSubInfoOffset + trb.chunk, 0)
+        tmod.meshSubInfos.append(TMOD.MeshSubInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
+        tmod.meshSubInfos[j].faceCount /= 3
+        print("Vertices: ", tmod.meshSubInfos[j].vertexCount, " Faces: ", tmod.meshSubInfos[j].faceCount)
+    md.append(ModelData(modelName, meshNames))
+    for i in range(tmod.meshesInfo.meshCount):
+        verts = []
+        normals = []
+        uvs = []
+        faces = []
+        f.seek(tmod.meshSubInfos[i].vertexOffset + trb.chunk, 0)
+        for l in range(tmod.meshSubInfos[i].vertexCount):
+            verts.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
+            normals.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
+            f.seek(8,1)
+            uvs.append(Vector((readFloat(f), -readFloat(f))))
+            f.seek(4,1)
+        f.seek(tmod.meshSubInfos[i].faceOffset + trb.chunk, 0)
+        for p in range(int(tmod.meshSubInfos[i].faceCount)):
+            faces.append([readUShort(f), readUShort(f), readUShort(f)])
+        md[mdIndex].meshData.append(ModelData.MeshData(verts, faces, normals, uvs))
+    mdIndex += 1
+    x2 += 10
+    del tmod
+
+def readWorld(mdIndex : int):
+    meshNames = []
+    twld = TWLD(TWLD.Header(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+        { readFloat(f), readFloat(f), readFloat(f), readFloat(f)}, readUInt(f), readUInt(f)))
+    f.seek(twld.header.modelFileNameOffset + trb.chunk, 0)
+    modelName = readString(f)
+    f.seek(twld.header.unknownInfoOffset + trb.chunk, 0)
+    # Very unclean; there might be more 'UnknownInfos' than one
+    twld.unknownInfos.append(TWLD.UnknownInfo(
+        readUInt(f), readUInt(f), readUInt(f)))
+    f.seek(twld.unknownInfos[0].unknownInfo2Offset + trb.chunk, 0)
+    twld.unknownInfos2.append(TWLD.UnknownInfo2(readUInt(f), readUInt(f), readUInt(f)))
+    f.seek(twld.unknownInfos2[0].unknownInfo3Offset + trb.chunk, 0)
+    twld.unknownInfos3.append(TWLD.UnknownInfo3(readUInt(f), {readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+    readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+    readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+    readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f) }))
+    twld.meshesInfo = TWLD.MeshesInfo(readUInt(f), readUInt(f), readUInt(f))
+    for g in range(twld.meshesInfo.meshInfoOffsetsCount):
+        f.seek(twld.meshesInfo.meshInfoOffsetsOffset + trb.chunk, 0)
+        twld.meshesInfo.meshInfoOffsets.append(readUInt(f))
+    tell = f.tell()
+    for h in range(twld.meshesInfo.meshInfoOffsetsCount):
+        f.seek(twld.meshesInfo.meshInfoOffsets[h] + trb.chunk, 0)
+        twld.meshInfos.append(TWLD.MeshInfo({ readFloat(f), readFloat(f), readFloat(f), readFloat(f) }, readUInt(f)))
+    for c in range(twld.meshesInfo.meshInfoOffsetsCount):
+        f.seek(twld.meshInfos[c].meshSubInfoOffset + trb.chunk, 0)
+        twld.meshSubInfos.append(TWLD.MeshSubInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+        readUInt(f), readUInt(f), readUInt(f)))
+        f.seek(twld.meshSubInfos[c].meshNameOffset + trb.chunk, 0)
+        meshNames.append(readString(f))
+        twld.meshSubInfos[c].faceCount /= 3                    
+    md.append(ModelData(modelName, meshNames))
+    for v in range(twld.meshesInfo.meshInfoOffsetsCount):
+        verts = []
+        normals = []
+        uvs = []
+        faces = []
+        f.seek(twld.meshSubInfos[v].vertexOffset + trb.chunk, 0)
+        for w in range(twld.meshSubInfos[v].vertexCount):
+            verts.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
+            normals.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
+            f.seek(12,1)
+            uvs.append(Vector((readFloat(f), -readFloat(f))))
+            f.seek(8,1)
+        f.seek(twld.meshSubInfos[v].faceOffset + trb.chunk, 0)
+        for q in range(int(twld.meshSubInfos[v].faceCount)):
+            faces.append([readUShort(f), readUShort(f), readUShort(f)])
+        md[mdIndex].meshData.append(ModelData.MeshData(verts, faces, normals, uvs))
+    mdIndex += 1
+    del twld
+
 # Why recursion???
 def read(filepath, t):
     f = open(filepath, "rb")
@@ -53,99 +148,9 @@ def read(filepath, t):
         f.seek(chunk + trb.symb.symbols[x].dataOffset, 0)
         if t is 0:
             if trb.symb.symbols[x].name == "tmod":
-                meshNames = []
-                tell = f.tell()
-                tmod = TMOD(TMOD.Header(readUInt(f), readUInt(f), readFloat(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
-                f.seek(tmod.header.modelFileNameOffset + chunk, 0)
-                modelName = readString(f)
-                f.seek(tmod.header.meshInfoOffset + chunk, 0)
-                tmod.meshesInfo = TMOD.MeshesInfo(readUInt(f), readUInt(f), readUInt(f))
-                for y in range(tmod.meshesInfo.meshCount):
-                    tmod.meshesInfo.meshInfoOffsets.append(readUInt(f))
-                print("Mesh Count: ", tmod.meshesInfo.meshCount, "Model Name: ", modelName)
-                for z in range(tmod.meshesInfo.meshCount):
-                    f.seek(tmod.meshesInfo.meshInfoOffsets[z] + chunk, 0)
-                    tmod.meshInfos.append(TMOD.MeshInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
-                    f.seek(tmod.meshInfos[z].meshNameOffset + chunk, 0)
-                    meshName = readString(f)
-                    meshNames.append(meshName)
-                    print("\t Mesh Name: ", meshName)
-                for j in range(tmod.meshesInfo.meshCount):
-                    f.seek(tmod.meshInfos[j].meshSubInfoOffset + chunk, 0)
-                    tmod.meshSubInfos.append(TMOD.MeshSubInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
-                    tmod.meshSubInfos[j].faceCount /= 3
-                    print("Vertices: ", tmod.meshSubInfos[j].vertexCount, " Faces: ", tmod.meshSubInfos[j].faceCount)
-                md.append(ModelData(modelName, meshNames))
-                for i in range(tmod.meshesInfo.meshCount):
-                    verts = []
-                    normals = []
-                    uvs = []
-                    faces = []
-                    f.seek(tmod.meshSubInfos[i].vertexOffset + chunk, 0)
-                    for l in range(tmod.meshSubInfos[i].vertexCount):
-                        verts.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
-                        normals.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
-                        f.seek(8,1)
-                        uvs.append(Vector((readFloat(f), -readFloat(f))))
-                        f.seek(4,1)
-                    f.seek(tmod.meshSubInfos[i].faceOffset + chunk, 0)
-                    for p in range(int(tmod.meshSubInfos[i].faceCount)):
-                        faces.append([readUShort(f), readUShort(f), readUShort(f)])
-                    md[mdIndex].meshData.append(ModelData.MeshData(verts, faces, normals, uvs))
-                mdIndex += 1
-                x2 += 10
-                del tmod
+                readModel(mdIndex, x2)
             if trb.symb.symbols[x].name == "twld":
-                tell = f.tell()
-                meshNames = []
-                twld = TWLD(TWLD.Header(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                { readFloat(f), readFloat(f), readFloat(f), readFloat(f)}, readUInt(f), readUInt(f)))
-                f.seek(twld.header.modelFileNameOffset + chunk, 0)
-                modelName = readString(f)
-                f.seek(twld.header.unknownInfoOffset + chunk, 0)
-                # Very unclean; there might be more 'UnknownInfos' than one
-                twld.unknownInfos.append(TWLD.UnknownInfo(readUInt(f), readUInt(f), readUInt(f)))
-                f.seek(twld.unknownInfos[0].unknownInfo2Offset + chunk, 0)
-                twld.unknownInfos2.append(TWLD.UnknownInfo2(readUInt(f), readUInt(f), readUInt(f)))
-                f.seek(twld.unknownInfos2[0].unknownInfo3Offset + chunk, 0)
-                twld.unknownInfos3.append(TWLD.UnknownInfo3(readUInt(f), {readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f) }))
-                twld.meshesInfo = TWLD.MeshesInfo(readUInt(f), readUInt(f), readUInt(f))
-                for g in range(twld.meshesInfo.meshInfoOffsetsCount):
-                    f.seek(twld.meshesInfo.meshInfoOffsetsOffset + chunk, 0)
-                    twld.meshesInfo.meshInfoOffsets.append(readUInt(f))
-                tell = f.tell()
-                for h in range(twld.meshesInfo.meshInfoOffsetsCount):
-                    f.seek(twld.meshesInfo.meshInfoOffsets[h] + chunk, 0)
-                    twld.meshInfos.append(TWLD.MeshInfo({ readFloat(f), readFloat(f), readFloat(f), readFloat(f) }, readUInt(f)))
-                for c in range(twld.meshesInfo.meshInfoOffsetsCount):
-                    f.seek(twld.meshInfos[c].meshSubInfoOffset + chunk, 0)
-                    twld.meshSubInfos.append(TWLD.MeshSubInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                    readUInt(f), readUInt(f), readUInt(f)))
-                    f.seek(twld.meshSubInfos[c].meshNameOffset + chunk, 0)
-                    meshNames.append(readString(f))
-                    twld.meshSubInfos[c].faceCount /= 3                    
-                md.append(ModelData(modelName, meshNames))
-                for v in range(twld.meshesInfo.meshInfoOffsetsCount):
-                    verts = []
-                    normals = []
-                    uvs = []
-                    faces = []
-                    f.seek(twld.meshSubInfos[v].vertexOffset + chunk, 0)
-                    for w in range(twld.meshSubInfos[v].vertexCount):
-                        verts.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
-                        normals.append(Vector((readFloat(f), readFloat(f), readFloat(f))))
-                        f.seek(12,1)
-                        uvs.append(Vector((readFloat(f), -readFloat(f))))
-                        f.seek(8,1)
-                    f.seek(twld.meshSubInfos[v].faceOffset + chunk, 0)
-                    for q in range(int(twld.meshSubInfos[v].faceCount)):
-                        faces.append([readUShort(f), readUShort(f), readUShort(f)])
-                    md[mdIndex].meshData.append(ModelData.MeshData(verts, faces, normals, uvs))
-                mdIndex += 1
-                del twld
+                readWorld(mdIndex)
         else:
             if trb.symb.symbols[x].name == "Terrain_Main":
                 tell = f.tell()
@@ -171,7 +176,9 @@ def read(filepath, t):
                 # Gets The directory
                 dire = os.path.dirname(filepath)
                 # Loading RegionAssets at the moment
+                # Read RegionRuntimeData for all necessary models and level data
                 dire += "\\RegionAssets.trb"
+                # Why recursion?
                 read(dire, 0)
     if t is 0:
         print("TSFL: ", trb.tsfl.signature, "Size: ", trb.tsfl.size) 
