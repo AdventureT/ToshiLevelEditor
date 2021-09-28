@@ -134,8 +134,35 @@ def readWorld(mdIndex : int):
     mdIndex += 1
     del twld
 
+def readTerrain(filepath : str):
+    tell = f.tell()
+    terrain = Terrain(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
+    readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f))
+    f.seek(terrain.unknownInfoOffset + trb.chunk, 0)
+    for k in range(terrain.unknownInfoCount):
+        unknownInfo = Terrain.UnknownInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), {readUInt(f), readUInt(f), readUInt(f)}, readUInt(f), 
+        {readUInt(f), readUInt(f), readUInt(f)}, readUInt(f), {readUInt(f), readUInt(f), readUInt(f)})
+        re = f.tell()
+        f.seek(unknownInfo.coordsInfoOffset + trb.chunk, 0)
+        coordsInfo = Terrain.UnknownInfo.CoordsInfo(readUInt(f), readUInt(f))
+        f.seek(coordsInfo.coordsOffset + trb.chunk, 0)
+        pos = Vector((readFloat(f), readFloat(f), readFloat(f)))  
+        if (unknownInfo.modelNameOffset is not 0):
+            f.seek(unknownInfo.modelNameOffset + trb.chunk, 0)
+            td.append(TerrainData(readString(f), pos))
+        else:
+            f.seek(unknownInfo.typeNameOffset + trb.chunk, 0)
+            td.append(TerrainData(readString(f), pos))
+        f.seek(re,0)
+        print(td[k].modelName)
+    # Gets The directory
+    #dire = os.path.dirname(filepath)
+    # Loading RegionAssets at the moment
+    # Read RegionRuntimeData for all necessary models and level data
+    #dire += "\\RegionAssets.trb"
+
 # Why recursion???
-def read(filepath, t):
+def read(filepath : str, t):
     f = open(filepath, "rb")
     readTrbSections()
     f.seek(trb.chunk,0)
@@ -153,33 +180,9 @@ def read(filepath, t):
                 readWorld(mdIndex)
         else:
             if trb.symb.symbols[x].name == "Terrain_Main":
-                tell = f.tell()
-                terrain = Terrain(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), 
-                readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f))
-                f.seek(terrain.unknownInfoOffset + chunk, 0)
-                for k in range(terrain.unknownInfoCount):
-                    unknownInfo = Terrain.UnknownInfo(readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), {readUInt(f), readUInt(f), readUInt(f)}, readUInt(f), 
-                    {readUInt(f), readUInt(f), readUInt(f)}, readUInt(f), {readUInt(f), readUInt(f), readUInt(f)})
-                    re = f.tell()
-                    f.seek(unknownInfo.coordsInfoOffset + chunk, 0)
-                    coordsInfo = Terrain.UnknownInfo.CoordsInfo(readUInt(f), readUInt(f))
-                    f.seek(coordsInfo.coordsOffset + chunk, 0)
-                    pos = Vector((readFloat(f), readFloat(f), readFloat(f)))  
-                    if (unknownInfo.modelNameOffset is not 0):
-                        f.seek(unknownInfo.modelNameOffset + chunk, 0)
-                        td.append(TerrainData(readString(f), pos))
-                    else:
-                        f.seek(unknownInfo.typeNameOffset + chunk, 0)
-                        td.append(TerrainData(readString(f), pos))
-                    f.seek(re,0)
-                    print(td[k].modelName)
-                # Gets The directory
-                dire = os.path.dirname(filepath)
-                # Loading RegionAssets at the moment
-                # Read RegionRuntimeData for all necessary models and level data
-                dire += "\\RegionAssets.trb"
+                readTerrain()
                 # Why recursion?
-                read(dire, 0)
+                # read(dire, 0)
     if t is 0:
         print("TSFL: ", trb.tsfl.signature, "Size: ", trb.tsfl.size) 
         print("TRBF: ", trb.trbf.signature)
