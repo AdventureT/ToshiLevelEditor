@@ -54,7 +54,7 @@ class SYMB:
 
 class TRB:
 
-    chunk : int
+    chunk : int = 0
 
     def __init__(self, tsfl:TSFL, trbf:TRBF, hdrx:HDRX, sect:SECT, relc:RELC, symb:SYMB):
         self.tsfl = tsfl
@@ -104,7 +104,7 @@ class TMOD:
         def __init__(self, vertexCount, normalCount, faceCount, one, offsetToAnotherOne, vertexOffset, faceOffset):
             self.vertexCount = vertexCount
             self.normalCount = normalCount
-            self.faceCount = faceCount
+            self.faceCount : int = faceCount
             self.one = one
             self.offsetToAnotherOne = offsetToAnotherOne
             self.vertexOffset = vertexOffset
@@ -129,13 +129,13 @@ class TWLD:
         self.meshInfos = []
         self.meshSubInfos = []
     class Header:
-        def __init__(self, modelFileNameOffset, unknownInfoOffset, unknownOffset, unknown, unknown2, floats, meshInfoOffsetOffset, meshInfoOffset):
+        def __init__(self, modelFileNameOffset, meshInfoOffset, collisionOffset, skeletonHeaderOffset, skeletonOffset, bbox):
             self.modelFileNameOffset = modelFileNameOffset
-            self.unknownInfoOffset = unknownInfoOffset
-            self.unknownOffset = unknownOffset
-            self.unknown = unknown
-            self.unknown2 = unknown2
-            self.floats = floats
+            self.meshInfoOffset = meshInfoOffset
+            self.collisionOffset = collisionOffset
+            self.skeletonHeaderOffset = skeletonHeaderOffset
+            self.skeletonOffset = skeletonOffset
+            self.bbox = bbox
     class UnknownInfo:
         def __init__(self, unknown, unknownInfo2OffsetOffset, unknownInfo2Offset):
             self.unknown = unknown
@@ -171,7 +171,7 @@ class TWLD:
             self.zero = zero
             self.vertexCount = vertexCount
             self.normalCount = normalCount
-            self.faceCount = faceCount
+            self.faceCount : int = faceCount
             self.meshNameOffset = meshNameOffset
             self.vertexOffset = vertexOffset
             self.faceOffset = faceOffset
