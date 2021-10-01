@@ -69,7 +69,7 @@ def readModel(mdIndex, f: BufferedReader, chunk : int):
         f.seek(tmod.meshInfos[j].meshSubInfoOffset + chunk, 0)
         tmod.meshSubInfos.append(TMOD.MeshSubInfo(readUInt(f), readUInt(
             f), readUInt(f), readUInt(f), readUInt(f), readUInt(f), readUInt(f)))
-        tmod.meshSubInfos[j].faceCount /= 3
+        tmod.meshSubInfos[j].faceCount //= 3
         print("Vertices: ", tmod.meshSubInfos[j].vertexCount,
               " Faces: ", tmod.meshSubInfos[j].faceCount)
     md.append(ModelData(modelName, meshNames))
@@ -130,7 +130,7 @@ def readWorld(mdIndex: int, f: BufferedReader, chunk : int):
                                                   readUInt(f), readUInt(f), readUInt(f)))
         f.seek(twld.meshSubInfos[c].meshNameOffset + chunk, 0)
         meshNames.append(readString(f))
-        twld.meshSubInfos[c].faceCount /= 3
+        twld.meshSubInfos[c].faceCount //= 3
     md.append(ModelData(modelName, meshNames))
     for v in range(twld.meshesInfo.meshInfoOffsetsCount):
         verts = []
@@ -225,7 +225,7 @@ def readRegionRuntimeData(filepath : str):
 
 def readAssets(assetNames: list, filepath : str):
     for i in range(len(assetNames)):
-        f = open(filepath + "\\" +assetNames[i] + ".trb", "rb")
+        f = open(f"{filepath}\\{assetNames[i]}.trb", "rb")
         trb = readTrbSections(f)
         mdIndex = 0
         chunk = trb.chunk
